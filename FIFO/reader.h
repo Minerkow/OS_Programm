@@ -10,5 +10,15 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "writer.h"
+#include "ErrorCheck.h"
+
+struct ConnectAccept_t {
+    pid_t pidReader;
+    pid_t pidWriter;
+};
 
 void Load_from_Fifo_in_Stdin();
+
+void Connect_with_Writer(int fdAns, int fdData, pid_t* pidWriter);
+bool Receive_Message(int fdData, pid_t pidWriter);

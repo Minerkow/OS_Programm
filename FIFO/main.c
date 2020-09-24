@@ -1,5 +1,6 @@
 #include "writer.h"
 #include "reader.h"
+#include "ErrorCheck.h"
 
 int main(int argc, char** argv) {
 
@@ -9,9 +10,7 @@ int main(int argc, char** argv) {
     if (argc == 2) {
         Load_from_File_in_Fifo(argv[1]);
     }
-    if (argc > 2) {
-        fprintf(stderr, "Extra Arguments");
-        exit(ERROR);
-    }
+
+    ErrorCheck(argc > 2, "Extra Arguments");
     return 0;
 } 

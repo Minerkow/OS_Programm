@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/FIFO_V3.dir/main.c.o CMakeFiles/FIFO_V3.dir/Reader.c.o CMakeFiles/FIFO_V3.dir/Writer.c.o  -o FIFO_V3 

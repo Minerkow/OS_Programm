@@ -1,11 +1,11 @@
 #include "Writer.h"
 
-void Send_to_Reader(char way[]) {
+void Send_to_Reader(char path[]) {
     char dataFifo[MAX_LEN_FIFO_NAME] = "/tmp/fifo.";
     char servFifo[] = "/tmp/fifo.serv";
     pid_t pidReader;
 
-    int fdFile = open(way, O_RDONLY);
+    int fdFile = open(path, O_RDONLY);
     if (fdFile < 0) {
         perror("open()");
         exit(ERROR);
@@ -27,24 +27,25 @@ void Send_to_Reader(char way[]) {
     printf("open servFifo\n");
 
     Connect_with_Reader(dataFifo, fdServ, &pidReader);
+
+    //sleep(5);
+
     printf("%s\n", dataFifo);
 
     printf("connect with reader\n");
 
-    if (mkfifo(dataFifo, 0666) < 0) {
+    if (mkfifo(dataFifo, 0666) < 0 && errno != EEXIST) {
         perror("mkfifo()");
         exit(ERROR);
     }
 
-    int fdData = open(dataFifo, O_WRONLY); // | O_NONBLOCK
+    int fdData = open(dataFifo, O_WRONLY | O_NDELAY);
     if (fdData < 0) {
         perror("open()");
         exit(ERROR);
     }
 
     printf("open dataFifo\n");
-
-    sleep(10);
 
     Send_File( fdFile, fdData, pidReader);
 
@@ -80,6 +81,10 @@ void Connect_with_Reader(char dataFifo[], int fdServ, pid_t* pidReader) {
 }
 
 void Send_File(int fdFile, int fdData, pid_t pidReader) {
+    if (fcntl(fdData, F_SETFL, O_WRONLY)) {
+        perror("fcntl()");
+        exit(ERROR);
+    }
     fd_set wfds;
     struct timeval tv = {READER_TIMEOUT, 0};
     FD_ZERO(&wfds);
@@ -106,4 +111,3 @@ void Send_File(int fdFile, int fdData, pid_t pidReader) {
             break;
     }
 }
-

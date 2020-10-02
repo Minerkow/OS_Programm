@@ -35,7 +35,6 @@ void Get_from_Writer() {
 
     Connect_with_Writer(fdServ);
 
-    sleep(5);
 
     printf("connect with writer\n");
 
@@ -92,7 +91,7 @@ void Get_File(int fdData) {
 
         int numSymbols = splice( fdData, NULL,
                                  STDOUT_FILENO, NULL,
-                                 1, SPLICE_F_MOVE);
+                                 PIPE_BUF, SPLICE_F_MOVE);
         if (numSymbols < 0) {
             perror("splice()");
             exit(ERROR);

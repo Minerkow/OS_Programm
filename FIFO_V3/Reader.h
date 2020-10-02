@@ -18,7 +18,7 @@
 
 #include "Writer.h"
 
-enum {WRITER_TIMEOUT = 1, WAITING_WRITER_TIMEOUT = 0};
+enum {WRITER_TIMEOUT = 5, WAITING_WRITER_TIMEOUT = 0};
 
 void Get_from_Writer();
 

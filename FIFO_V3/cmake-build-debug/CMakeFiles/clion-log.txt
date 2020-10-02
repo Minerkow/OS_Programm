@@ -1,4 +1,4 @@
-/home/bibi/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/202.6948.80/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/bibi/Desktop/Programm/Operation_System/FIFO_V3
+/home/bibi/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/202.6948.80/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/bibi/Desktop/Programm/Operation_System/FIFO_V3/cmake-build-debug
+-- Build files have been written to: /home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug

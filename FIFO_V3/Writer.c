@@ -77,6 +77,10 @@ void Connect_with_Reader(char dataFifo[], int fdServ, pid_t* pidReader) {
         perror("write()");
         exit(ERROR);
     }
+    if (*pidReader == 0) {
+        fprintf(stderr, "Reader busy");
+        exit(ERROR);
+    }
     sprintf(dataFifo + 10, "%d", *pidReader);
 }
 

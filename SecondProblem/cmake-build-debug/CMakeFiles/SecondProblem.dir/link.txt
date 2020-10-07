@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/SecondProblem.dir/main.c.o CMakeFiles/SecondProblem.dir/msg.c.o  -o SecondProblem 

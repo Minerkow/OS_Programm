@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bibi/Desktop/Programm/Operation_System/SecondProblem/msg.c
+msg.h
+/home/bibi/Desktop/Programm/Operation_System/SecondProblem/msg.h
+
+/home/bibi/Desktop/Programm/Operation_System/SecondProblem/msg.h
+fcntl.h
+-
+stdio.h
+-
+stdlib.h
+-
+limits.h
+-
+sys/types.h
+-
+unistd.h
+-
+sys/types.h
+-
+sys/ipc.h
+-
+sys/msg.h
+-
+sys/types.h
+-
+sys/wait.h
+-
+

@@ -22,3 +22,4 @@ struct msgBuff_t {
 long long int Read_Number_from_Bash (int argc, char** argv);
 void Create_Children(long long int num);
 void Handler(int signum);
+void Free_Msg(int id);

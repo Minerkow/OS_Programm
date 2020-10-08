@@ -34,7 +34,9 @@ void Create_Children(long long int num) {
         perror("msgget()");
         exit(EXIT_FAILURE);
     }
+    Free_Msg(mqid);
 
+    int ppid = getpid();
     struct msgBuff_t* msgs = calloc(num, sizeof(struct msgBuff_t));
 
     for (long long int i = 0; i < num; ++i) {
@@ -42,24 +44,33 @@ void Create_Children(long long int num) {
         switch (pid) {
             case -1: {
                 perror("fork()");
+                Free_Msg(0);
                 exit(EXIT_FAILURE);
             }
             case 0: {
-                if (prctl(PR_SET_PDEATHSIG, mqid) < 0) {
+                if (prctl(PR_SET_PDEATHSIG, SIGUSR1) < 0) {
                     perror("prctl()");
+                    Free_Msg(0);
                     exit(EXIT_FAILURE);
                 }
-                if (signal(mqid, Handler) < 0) {
+                if (ppid != getppid()) {
+                    fprintf(stderr, "Not my Dad!!");
+                    Free_Msg(0);
+                    exit(EXIT_FAILURE);
+                }
+                if (signal(SIGUSR1, Handler) < 0) {
                     perror("signal()");
+                    Free_Msg(0);
                     exit(EXIT_FAILURE);
                 }
                 struct msgBuff_t msg;
-//                if (i == 20) {
-//                    sleep(10);
-//                }
+                if (i == 3) {
+                    sleep(10);
+                }
                 if (msgrcv(mqid, &msg, sizeof(struct msgBuff_t) - sizeof(long),
                         getpid(), 0) < 0) {
                     perror("msgrcv()");
+                    Free_Msg(0);
                     exit(EXIT_FAILURE);
                 }
                 printf("I am process with pid - %d, my №%lld\n", getpid(), msg.id_);
@@ -79,11 +90,13 @@ void Create_Children(long long int num) {
         if (msgsnd(mqid, &msgs[i], sizeof(struct msgBuff_t) - sizeof(long),
                 0) < 0) {
             perror("msgsnd()");
+            Free_Msg(0);
             exit(EXIT_FAILURE);
         }
         int stat;
         if (waitpid(msgs[i].mtype_, &stat, 0) < 0) {
             perror("waitpid()");
+            Free_Msg(0);
             exit(EXIT_FAILURE);
         }
         if (WIFSIGNALED(stat) != 0 && WTERMSIG(stat) != EXIT_SUCCESS) {
@@ -91,17 +104,23 @@ void Create_Children(long long int num) {
         }
     }
 
-    if (msgctl(mqid, IPC_RMID, NULL) < 0) {
-        perror("msgctl()");
-        exit(EXIT_FAILURE);
-    }
+    Free_Msg(0);
 }
 
 void Handler(int signum) {
-    int err = msgctl(signum, IPC_RMID, NULL);
-    if (err < 0 && errno != EINVAL) {
-        perror("msgctl()");
-        exit(EXIT_FAILURE);
-    }
+    Free_Msg(0);
+    //fprintf(stderr, "Parent DEAD");
     exit(EXIT_FAILURE);
+}
+
+void Free_Msg(int id) {
+    static int mqid = 0;
+    if (id != 0) {
+        mqid = id;
+    } else {
+        if (msgctl(mqid, IPC_RMID, NULL) < 0 && errno != EINVAL) {
+            perror("msgctl()");
+            exit(EXIT_FAILURE);
+        }
+    }
 }

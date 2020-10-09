@@ -1,3 +1,3 @@
-/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir
+/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir

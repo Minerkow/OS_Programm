@@ -69,7 +69,7 @@ void Send_to_Reader(char path[]) {
     if (unlink(dataFifo) < 0) {
         perror("unlink()");
         exit(ERROR);
-    }
+    }8
 }
 
 void Connect_with_Reader(char dataFifo[], int fdServ, pid_t* pidReader) {
@@ -89,23 +89,8 @@ void Send_File(int fdFile, int fdData, pid_t pidReader) {
         perror("fcntl()");
         exit(ERROR);
     }
-    fd_set wfds;
-    struct timeval tv = {READER_TIMEOUT, 0};
-    FD_ZERO(&wfds);
-    FD_SET(fdData, &wfds);
-    int retval;
-    while (1) {
-        retval = select(fdData + 1, NULL, &wfds, NULL, &tv);
-        switch (retval) {
-            case 0:
-                fprintf(stderr, "Reader DEAD!!");
-                return;
-            case -1:
-                perror("select()");
-                exit(ERROR);
-            default:;
-        }
 
+    while (1) {
         int numSymbols = splice(fdFile, NULL, fdData, NULL, PIPE_BUF, SPLICE_F_MOVE);
         if (numSymbols < 0) {
             perror("splice");

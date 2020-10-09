@@ -31,10 +31,15 @@ void Get_from_Writer() {
         exit(ERROR);
     }
 
+    int fdDataWR = open(dataFifo, O_WRONLY | O_NDELAY);
+    if (fdData < 0 && errno != ENOENT) {
+        perror("open()");
+        exit(ERROR);
+    }
+
     printf("open servFifo\n");
 
     Connect_with_Writer(fdServ);
-
 
     printf("connect with writer\n");
 
@@ -42,10 +47,9 @@ void Get_from_Writer() {
 
     printf("open dataFifo\n");
 
-    if (fdData > 0) {
-        Get_File(fdData);
-        printf("get File\n");
-    }
+
+    Get_File(fdData, fdDataWR);
+    printf("get File\n");
 
     if (close(fdServ) < 0) {
         perror("close()");
@@ -66,28 +70,35 @@ void Connect_with_Writer(int fdServ) {
     }
 }
 
-void Get_File(int fdData) {
-    if (fcntl(fdData, F_SETFL, O_RDONLY)) {
-        perror("fcntl()");
-        exit(ERROR);
-    }
+void Get_File(int fdData, int fdDataWR) {
+
     fd_set rfds;
     struct timeval tv = {WRITER_TIMEOUT, 0};
     FD_ZERO(&rfds);
     FD_SET(fdData, &rfds);
     int retval;
+    retval = select(fdData + 1, &rfds,
+                    NULL, NULL, &tv);
+    switch (retval) {
+        case 0:
+            fprintf(stderr, "Writer DEAD!!");
+            return;
+        case -1:
+            perror("select()");
+            exit(ERROR);
+        default:;
+    }
+
+    if (close(fdDataWR) < 0) {
+        perror("close()");
+        exit(ERROR);
+    }
+    if (fcntl(fdData, F_SETFL, O_RDONLY)) {
+        perror("fcntl()");
+        exit(ERROR);
+    }
+
     while (1) {
-        retval = select(fdData + 1, &rfds,
-                        NULL, NULL, &tv);
-        switch (retval) {
-            case 0:
-                fprintf(stderr, "Writer DEAD!!");
-                return;
-            case -1:
-                perror("select()");
-                exit(ERROR);
-            default:;
-        }
 
         int numSymbols = splice( fdData, NULL,
                                  STDOUT_FILENO, NULL,

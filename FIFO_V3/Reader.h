@@ -23,6 +23,6 @@ enum {WRITER_TIMEOUT = 5, WAITING_WRITER_TIMEOUT = 0};
 void Get_from_Writer();
 
 void Connect_with_Writer(int fdServ);
-void Get_File(int fdData);
+void Get_File(int fdData, int fdDataWR);
 int Open_Data_Fifo(int fdData);
 

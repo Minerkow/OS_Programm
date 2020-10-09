@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/Reader.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/Reader.c.o"
-  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/Writer.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/Writer.c.o"
-  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/main.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/main.c.o"
+  "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/Reader.c" "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/Reader.c.o"
+  "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/Writer.c" "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/Writer.c.o"
+  "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/main.c" "/home/bibi/Desktop/tmp/OS_Programm/FIFO_V3/cmake-build-debug/CMakeFiles/FIFO_V3.dir/main.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

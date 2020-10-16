@@ -42,7 +42,7 @@ void Writer(char* path) {
     fprintf(stderr, "All create, sems Init\n");
 #endif
 
-    SemOp(sem, P, WRITER, 0);
+    SemOp(sem, P, WRITER, SEM_UNDO);
 
 #ifdef DEBUG
     fprintf(stderr, "Writer LOCK\n");
@@ -56,9 +56,9 @@ void Writer(char* path) {
             perror("read()");
             exit(EXIT_FAILURE);
         }
-
+        
         SemOp(sem, P, EMPTY, 0);
-        SemOp(sem, P, MUTEX, 0);
+        SemOp(sem, P, MUTEX, SEM_UNDO);
 
 #ifdef DEBUG
     fprintf(stderr, "Start send block Memory!\n");
@@ -73,7 +73,7 @@ void Writer(char* path) {
         fprintf(stderr, "End send block Memory!\n");
 #endif
 
-        SemOp(sem, V, MUTEX, 0);
+        SemOp(sem, V, MUTEX, SEM_UNDO);
         SemOp(sem, V, FULL, 0);
 
         if (buff.numSymbols_ == 0) {
@@ -81,7 +81,7 @@ void Writer(char* path) {
         }
     }
 
-    SemOp(sem, V, WRITER, 0);
+    SemOp(sem, V, WRITER, SEM_UNDO);
 
 #ifdef DEBUG
     fprintf(stderr, "ReaderSem out!\n");
@@ -103,6 +103,7 @@ void Writer(char* path) {
     }
 }
 
+//--------------------------------------------------------------------------------
 
 void SemOp(int sem, short sem_op, int sem_num, short flag) {
     struct sembuf sop = {sem_num, sem_op, flag};
@@ -111,6 +112,8 @@ void SemOp(int sem, short sem_op, int sem_num, short flag) {
         exit(EXIT_FAILURE);
     }
 }
+
+//---------------------------------------------------------------------------------
 
 int InitSem(key_t key, unsigned short* value, int numSem) {
     int semId = semget(key, numSem, 0666 | IPC_CREAT | IPC_EXCL);
@@ -165,6 +168,8 @@ int InitSem(key_t key, unsigned short* value, int numSem) {
     }
     return semId;
 }
+
+//----------------------------------------------------------------------------------------
 
 void DeleteSem(int semId) {
     if (semctl(semId, 0, IPC_RMID) < 0) {

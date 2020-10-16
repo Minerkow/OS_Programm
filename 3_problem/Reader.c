@@ -34,13 +34,13 @@ void Reader() {
     fprintf(stderr, "All create, sems Init\n");
 #endif
 
-    SemOp(sem, P, READER, 0);
+    SemOp(sem, P, READER, SEM_UNDO);
 
     struct Data_t buff;
 
     while(1) {
         SemOp(sem, P, FULL, 0);
-        SemOp(sem, P, MUTEX, 0);
+        SemOp(sem, P, MUTEX, SEM_UNDO);
 
 #ifdef DEBUG
         fprintf(stderr, "Start get block Memory!\n");
@@ -51,7 +51,7 @@ void Reader() {
             exit(EXIT_FAILURE);
         }
 
-        SemOp(sem, V, MUTEX, 0);
+        SemOp(sem, V, MUTEX, SEM_UNDO);
         SemOp(sem, V, EMPTY, 0);
 
         if (buff.numSymbols_ == 0) {
@@ -63,7 +63,7 @@ void Reader() {
         }
     }
 
-    SemOp(sem, V, READER, 0);
+    SemOp(sem, V, READER, SEM_UNDO);
 
 #ifdef DEBUG
     fprintf(stderr, "ReaderSem out!\n");

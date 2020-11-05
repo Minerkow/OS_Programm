@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bibi/Desktop/Programm/Operation_System/43_Problem/main.c
+sys/types.h
+-
+sys/stat.h
+-
+fcntl.h
+-
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+signal.h
+-
+errno.h
+-
+sys/prctl.h
+-
+

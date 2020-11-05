@@ -1,0 +1,3 @@
+/home/bibi/Desktop/Programm/Operation_System/43_Problem/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/bibi/Desktop/Programm/Operation_System/43_Problem/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bibi/Desktop/Programm/Operation_System/43_Problem/cmake-build-debug/CMakeFiles/43_Problem.dir

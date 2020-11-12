@@ -100,6 +100,18 @@ void Writer(char* path) {
         semop(semId, &initE, 1);
     }
 
+    //Wait Connect
+    struct sembuf checkC[2];
+
+    checkC[0].sem_num = READER;
+    checkC[0].sem_op = P;
+    checkC[0].sem_flg = 0;
+
+    checkC[1].sem_num = READER;
+    checkC[1].sem_op = V;
+    checkC[1].sem_flg = 0;
+
+    semop(semId, checkC, 2);
 
     //Recv data
 
@@ -113,8 +125,38 @@ void Writer(char* path) {
         }
 
         //EMPTY - P && MUTEX - P
-        struct sembuf sopEP = {EMPTY, P, 0};
-        semop(semId, &sopEP, 1);
+#ifdef DEBUG
+        fprintf(stderr, "ReaderSem out!\n");
+        if (semctl(semId, 0, GETALL, vals) < 0) {
+            perror("semctl()");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(stderr, "SemVal = {");
+        for (int i = 0; i < 6; ++i) {
+            fprintf(stderr, " %d", vals[i]);
+        }
+        fprintf(stderr, "}\n");
+#endif
+        struct sembuf sopEP[3];
+
+        sopEP[0].sem_num = READER;
+        sopEP[0].sem_op = P;
+        sopEP[0].sem_flg = IPC_NOWAIT;
+
+        sopEP[1].sem_num = READER;
+        sopEP[1].sem_op = V;
+        sopEP[1].sem_flg = 0;
+
+        sopEP[2].sem_num = EMPTY;
+        sopEP[2].sem_op = P;
+        sopEP[2].sem_flg = 0;
+
+        if (semop(semId, sopEP, 3) < 0) {
+            perror ("semop writer in while");
+            fprintf(stderr, "Reader DEAD\n");
+            exit(EXIT_FAILURE);
+        }
+
         struct sembuf sopMP = {MUTEX, P, SEM_UNDO};
         semop(semId, &sopMP, 1);
 

@@ -63,20 +63,58 @@ void Reader() {
         exit(EXIT_FAILURE);
     }
 
-    struct Data_t buff;
+    //Wait Connect
+    struct sembuf checkC[2];
 
+    checkC[0].sem_num = WRITER;
+    checkC[0].sem_op = P;
+    checkC[0].sem_flg = 0;
+
+    checkC[1].sem_num = WRITER;
+    checkC[1].sem_op = V;
+    checkC[1].sem_flg = 0;
+
+    semop(semId, checkC, 2);
+
+    struct Data_t buff;
     while(1) {
         //FULL - P && MUTEX - P
-        struct sembuf sopFP = {FULL, P, 0};
-        semop(semId, &sopFP, 1);
+#ifdef DEBUG
+        fprintf(stderr, "ReaderSem out!\n");
+        if (semctl(semId, 0, GETALL, vals) < 0) {
+            perror("semctl()");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(stderr, "SemVal = {");
+        for (int i = 0; i < 6; ++i) {
+            fprintf(stderr, " %d", vals[i]);
+        }
+        fprintf(stderr, "}\n");
+#endif
+        struct sembuf sopFP[3];
 
+        sopFP[0].sem_num = WRITER;
+        sopFP[0].sem_op = P;
+        sopFP[0].sem_flg = IPC_NOWAIT;
+
+        sopFP[1].sem_num = WRITER;
+        sopFP[1].sem_op = V;
+        sopFP[1].sem_flg = 0;
+
+        sopFP[2].sem_num = FULL;
+        sopFP[2].sem_op = P;
+        sopFP[2].sem_flg = 0;
+
+        if (semop(semId, sopFP, 3) < 0) {
+            fprintf(stderr, "Writer DEAD\n");
+            exit(EXIT_FAILURE);
+        }
         struct sembuf sopMP = {MUTEX, P, SEM_UNDO};
         semop(semId, &sopMP, 1);
 
 #ifdef DEBUG
         fprintf(stderr, "MUTEX and FULL - P\n");
 #endif
-
 
         if (memcpy(&buff, shMemory, SHMSIZE) == NULL) {
             fprintf(stderr, "MemCpy ERROR\n");
@@ -112,7 +150,7 @@ void Reader() {
             perror("write()");
             exit(EXIT_FAILURE);
         }
-        sleep(3);
+        //sleep(3);
 
     }
 

@@ -17,7 +17,7 @@
 
 enum {PROJ_ID = 5, SHMSIZE = 4096, DATASIZE = SHMSIZE - sizeof(size_t)};
 enum {MUTEX = 0, EMPTY = 1, FULL = 2, WRITER = 3, READER = 4};
-enum {P = -1, V = 1};
+enum {P = -1, V = 1, W = 0};
 
 struct Data_t {
     size_t numSymbols_;

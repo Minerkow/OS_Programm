@@ -1,3 +1,3 @@
-/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir

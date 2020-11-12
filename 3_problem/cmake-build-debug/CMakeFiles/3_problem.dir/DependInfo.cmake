@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/bibi/Desktop/Programm/Operation_System/3_problem/Reader.c" "/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/Reader.c.o"
-  "/home/bibi/Desktop/Programm/Operation_System/3_problem/Writer.c" "/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/Writer.c.o"
-  "/home/bibi/Desktop/Programm/Operation_System/3_problem/main.c" "/home/bibi/Desktop/Programm/Operation_System/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/main.c.o"
+  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/Reader.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/Reader.c.o"
+  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/Writer.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/Writer.c.o"
+  "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/main.c" "/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/cmake-build-debug/CMakeFiles/3_problem.dir/main.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

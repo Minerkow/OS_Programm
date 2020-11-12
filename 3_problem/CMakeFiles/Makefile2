@@ -64,10 +64,10 @@ RM = /home/bibi/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/202.6948.80/bin/c
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/bibi/Desktop/Programm/Operation_System/3_problem
+CMAKE_SOURCE_DIR = /home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/bibi/Desktop/Programm/Operation_System/3_problem
+CMAKE_BINARY_DIR = /home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -94,14 +94,14 @@ clean: CMakeFiles/3_problem.dir/clean
 CMakeFiles/3_problem.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/3_problem.dir/build.make CMakeFiles/3_problem.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/3_problem.dir/build.make CMakeFiles/3_problem.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/bibi/Desktop/Programm/Operation_System/3_problem/CMakeFiles --progress-num=1,2,3,4 "Built target 3_problem"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/CMakeFiles --progress-num=1,2,3,4 "Built target 3_problem"
 .PHONY : CMakeFiles/3_problem.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/3_problem.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/bibi/Desktop/Programm/Operation_System/3_problem/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/3_problem.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/bibi/Desktop/Programm/Operation_System/3_problem/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/bibi/Desktop/Programm/Operation_System/OS_Programm/3_problem/CMakeFiles 0
 .PHONY : CMakeFiles/3_problem.dir/rule
 
 # Convenience name for target.

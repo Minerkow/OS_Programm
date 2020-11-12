@@ -26,34 +26,80 @@ void Reader() {
         exit(EXIT_FAILURE);
     }
 
-    unsigned short valueSem[5] =  {1, 1, 0, 1, 1};
-    int sem = InitSem(key, valueSem, 5);
-
-
+    int semId = semget(key, 5, 0666 | IPC_CREAT );
+    if (semId < 0) {
+        perror("semget");
+        exit(EXIT_FAILURE);
+    }
 #ifdef DEBUG
-    fprintf(stderr, "All create, sems Init\n");
+    fprintf(stderr, "ReaderSem out!\n");
+        unsigned short vals[5];
+        if (semctl(semId, 0, GETALL, vals) < 0) {
+            perror("semctl()");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(stderr, "SemVal = {");
+        for (int i = 0; i < 5; ++i) {
+            fprintf(stderr, " %d", vals[i]);
+        }
+        fprintf(stderr, "}\n");
 #endif
 
-    SemOp(sem, P, READER, SEM_UNDO);
+    struct sembuf semInstructions[2];
+
+    semInstructions[0].sem_num = READER;
+    semInstructions[0].sem_op = W;
+    semInstructions[0].sem_flg = 0;
+
+    semInstructions[1].sem_num = READER;
+    semInstructions[1].sem_op = V;
+    semInstructions[1].sem_flg = SEM_UNDO;
+
+    if (semop(semId, semInstructions, 2) < 0) {
+        perror("semop");
+        exit(EXIT_FAILURE);
+    }
 
     struct Data_t buff;
 
     while(1) {
-        SemOp(sem, P, FULL, 0);
-        SemOp(sem, P, MUTEX, SEM_UNDO);
+        //FULL - P && MUTEX - P
+        struct sembuf sopFP = {FULL, P, 0};
+        semop(semId, &sopFP, 1);
+        struct sembuf sopMP = {MUTEX, P, SEM_UNDO};
+        semop(semId, &sopMP, 1);
 
 #ifdef DEBUG
-        fprintf(stderr, "Start get block Memory!\n");
+        fprintf(stderr, "MUTEX and FULL - P\n");
 #endif
+
 
         if (memcpy(&buff, shMemory, SHMSIZE) == NULL) {
             fprintf(stderr, "MemCpy ERROR\n");
             exit(EXIT_FAILURE);
         }
 
-        SemOp(sem, V, MUTEX, SEM_UNDO);
-        SemOp(sem, V, EMPTY, 0);
+        //EMPTY - V && MUTEX - V
+        struct sembuf sopEV = {EMPTY, V, 0};
+        semop(semId, &sopEV, 1);
+        struct sembuf sopMV = {MUTEX, V, SEM_UNDO};
+        semop(semId, &sopMV, 1);
+#ifdef DEBUG
+        fprintf(stderr, "MUTEX and EMPTY - V\n");
+#endif
 
+#ifdef DEBUG
+        fprintf(stderr, "ReaderSem out!\n");
+        if (semctl(semId, 0, GETALL, vals) < 0) {
+            perror("semctl()");
+            exit(EXIT_FAILURE);
+        }
+        fprintf(stderr, "SemVal = {");
+        for (int i = 0; i < 5; ++i) {
+            fprintf(stderr, " %d", vals[i]);
+        }
+        fprintf(stderr, "}\n");
+#endif
         if (buff.numSymbols_ == 0) {
             break;
         }
@@ -61,14 +107,19 @@ void Reader() {
             perror("write()");
             exit(EXIT_FAILURE);
         }
+        sleep(3);
+
     }
 
-    SemOp(sem, V, READER, SEM_UNDO);
+    struct sembuf sop = {READER, P, SEM_UNDO};
+    if (semop(semId, &sop, 1) < 0) {
+        perror("semop4");
+        exit(EXIT_FAILURE);
+    }
 
 #ifdef DEBUG
     fprintf(stderr, "ReaderSem out!\n");
-        unsigned short vals[5];
-        if (semctl(sem, 0, GETALL, vals) < 0) {
+        if (semctl(semId, 0, GETALL, vals) < 0) {
             perror("semctl()");
             exit(EXIT_FAILURE);
         }

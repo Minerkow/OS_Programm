@@ -35,20 +35,20 @@ void Writer(char* path) {
         exit(EXIT_FAILURE);
     }
 
-    int semId = semget(key, 5, 0666 | IPC_CREAT );
+    int semId = semget(key, 6, 0666 | IPC_CREAT );
     if (semId < 0) {
         perror("semgetW");
         exit(EXIT_FAILURE);
     }
 #ifdef DEBUG
     fprintf(stderr, "ReaderSem out!\n");
-        unsigned short vals[5];
+        unsigned short vals[6];
         if (semctl(semId, 0, GETALL, vals) < 0) {
             perror("semctl()");
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");
@@ -58,7 +58,7 @@ void Writer(char* path) {
     DeleteSem(semId);
 #endif
 
-    struct sembuf semInstructions[2];
+    struct sembuf semInstructions[3];
 
     semInstructions[0].sem_num = WRITER;
     semInstructions[0].sem_op = W;
@@ -68,14 +68,20 @@ void Writer(char* path) {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
-    //Init MUTEX 
-    semInstructions[2].sem_num = MUTEX;
+    semInstructions[2].sem_num = CONNECT;
     semInstructions[2].sem_op = V;
     semInstructions[2].sem_flg = SEM_UNDO;
 
-    if (semop(semId, semInstructions, 2) < 0) {
+    if (semop(semId, semInstructions, 3) < 0) {
         perror("semop");
         exit(EXIT_FAILURE);
+    }
+
+    //Init MUTEX
+    struct sembuf checkM = {MUTEX, W, IPC_NOWAIT};
+    if (semop(semId, &checkM, 1) >= 0) {
+        struct sembuf initM = {MUTEX, V, 0};
+        semop(semId, &initM, 1);
     }
 
     //Init FULL
@@ -93,6 +99,7 @@ void Writer(char* path) {
         struct sembuf initE = {EMPTY, V, 0};
         semop(semId, &initE, 1);
     }
+
 
     //Recv data
 
@@ -137,7 +144,7 @@ void Writer(char* path) {
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");
@@ -148,7 +155,11 @@ void Writer(char* path) {
         }
     }
 
+    struct sembuf pairP = {CONNECT, P, SEM_UNDO};
+    semop(semId, &pairP, 1);
 
+    struct sembuf pairW = {CONNECT, W, 0};
+    semop(semId, &pairW, 1);
 
     struct sembuf sop = {WRITER, P, SEM_UNDO};
     if (semop(semId, &sop, 1) < 0) {
@@ -163,7 +174,7 @@ void Writer(char* path) {
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");

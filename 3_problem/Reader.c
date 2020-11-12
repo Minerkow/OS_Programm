@@ -9,7 +9,6 @@ void Reader() {
         exit(EXIT_FAILURE);
     }
 
-
     int idShm = shmget(key, SHMSIZE, 0666 | IPC_CREAT );
     if (idShm < 0) {
         perror("shmget()");
@@ -26,26 +25,26 @@ void Reader() {
         exit(EXIT_FAILURE);
     }
 
-    int semId = semget(key, 5, 0666 | IPC_CREAT );
+    int semId = semget(key, 6, 0666 | IPC_CREAT );
     if (semId < 0) {
         perror("semget");
         exit(EXIT_FAILURE);
     }
 #ifdef DEBUG
     fprintf(stderr, "ReaderSem out!\n");
-        unsigned short vals[5];
+        unsigned short vals[6];
         if (semctl(semId, 0, GETALL, vals) < 0) {
             perror("semctl()");
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");
 #endif
 
-    struct sembuf semInstructions[2];
+    struct sembuf semInstructions[4];
 
     semInstructions[0].sem_num = READER;
     semInstructions[0].sem_op = W;
@@ -55,8 +54,12 @@ void Reader() {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
-    if (semop(semId, semInstructions, 2) < 0) {
-        perror("semop");
+    semInstructions[2].sem_num = CONNECT;
+    semInstructions[2].sem_op = V;
+    semInstructions[2].sem_flg = SEM_UNDO;
+
+    if (semop(semId, semInstructions, 3) < 0) {
+        perror("semop1");
         exit(EXIT_FAILURE);
     }
 
@@ -66,6 +69,7 @@ void Reader() {
         //FULL - P && MUTEX - P
         struct sembuf sopFP = {FULL, P, 0};
         semop(semId, &sopFP, 1);
+
         struct sembuf sopMP = {MUTEX, P, SEM_UNDO};
         semop(semId, &sopMP, 1);
 
@@ -82,6 +86,7 @@ void Reader() {
         //EMPTY - V && MUTEX - V
         struct sembuf sopEV = {EMPTY, V, 0};
         semop(semId, &sopEV, 1);
+
         struct sembuf sopMV = {MUTEX, V, SEM_UNDO};
         semop(semId, &sopMV, 1);
 #ifdef DEBUG
@@ -95,7 +100,7 @@ void Reader() {
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");
@@ -111,6 +116,12 @@ void Reader() {
 
     }
 
+    struct sembuf pairP = {CONNECT, P, SEM_UNDO};
+    semop(semId, &pairP, 1);
+
+    struct sembuf pairW = {CONNECT, W, 0};
+    semop(semId, &pairW, 1);
+
     struct sembuf sop = {READER, P, SEM_UNDO};
     if (semop(semId, &sop, 1) < 0) {
         perror("semop4");
@@ -124,7 +135,7 @@ void Reader() {
             exit(EXIT_FAILURE);
         }
         fprintf(stderr, "SemVal = {");
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 6; ++i) {
             fprintf(stderr, " %d", vals[i]);
         }
         fprintf(stderr, "}\n");

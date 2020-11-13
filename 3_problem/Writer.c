@@ -68,6 +68,8 @@ void Writer(char* path) {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
+
+    //Init CONNECT
     semInstructions[2].sem_num = CONNECT;
     semInstructions[2].sem_op = V;
     semInstructions[2].sem_flg = SEM_UNDO;
@@ -78,19 +80,11 @@ void Writer(char* path) {
     }
 
     //Init MUTEX
-    struct sembuf checkM = {MUTEX, W, IPC_NOWAIT};
-    if (semop(semId, &checkM, 1) >= 0) {
-        struct sembuf initM = {MUTEX, V, 0};
-        semop(semId, &initM, 1);
+    if (semctl(semId, MUTEX, SETVAL, 1) < 0) {
+        perror("semctl");
+        exit(EXIT_FAILURE);
     }
 
-    //Init FULL
-
-    struct sembuf checkF = {FULL, W, IPC_NOWAIT};
-    if (semop(semId, &checkF, 1) < 0) {
-        struct sembuf initF = {FULL, P, 0};
-        semop(semId, &initF, 1);
-    }
 
     //Init EMPTY
 

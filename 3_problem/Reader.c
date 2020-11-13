@@ -58,7 +58,20 @@ void Reader() {
     semInstructions[2].sem_op = V;
     semInstructions[2].sem_flg = SEM_UNDO;
 
-    if (semop(semId, semInstructions, 3) < 0) {
+    if (semop(semId, semInstructions, 2) < 0) {
+        perror("semop1");
+        exit(EXIT_FAILURE);
+    }
+
+    //Init FULL
+    struct sembuf checkF = {FULL, W, IPC_NOWAIT};
+    if (semop(semId, &checkF, 1) < 0) {
+        struct sembuf initF = {FULL, P, 0};
+        semop(semId, &initF, 1);
+    }
+
+    //Init CONNECT
+    if (semop(semId, &semInstructions[2], 1) < 0) {
         perror("semop1");
         exit(EXIT_FAILURE);
     }

@@ -12,27 +12,93 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    assert(argv[2]);
+    struct pollfd *ufdsR = calloc(numChild, sizeof(struct pollfd));
+    struct pollfd *ufdsW = calloc(numChild - 1, sizeof(struct pollfd));
 
     struct Connection_t* connectArr = calloc(numChild, sizeof(struct Connection_t));
     for (long long int i = 0; i < numChild; ++i) {
-        pipe(connectArr[i].rcvPipe);
-        pipe(connectArr[i].sendPipe);
+        //Pipe Open  C -> P
+        int pipeFdCP[2];
+        pipe(pipeFdCP);
+        connectArr[i].rcvFd = pipeFdCP[0];
 
-        pid_t pid = fork();
-        if (i == 0 && pid == 0) {
-            Loader_Run(argv[2], connectArr[i].rcvPipe[1]);
-            close(connectArr[i].sendPipe[0]);
-            close(connectArr[i].sendPipe[1]);
-            continue;
+        //Add fdRead to RPoll
+        ufdsR->fd = connectArr[i].rcvFd;
+        ufdsR->events = POLLIN;
+
+        //Pipe Open P -> C
+        int pipeFdPC[2];
+        if (i != 0) {
+            pipe(pipeFdPC);
+            connectArr[i - 1].sendFd = pipeFdPC[1];
+
+            //Add fdWrite to WPoll
+            ufdsW->fd = connectArr[i - 1].sendFd;
+            ufdsW->events = POLLOUT;
         }
+
+        //Create children
+        pid_t pid = fork();
         if (pid == 0) {
-            Child_Run(connectArr[i].rcvPipe[1], connectArr[i].sendPipe[0]);
+
+            close(pipeFdCP[READ]);
+
+            //Loader Run
+            if (i == 0) {
+                Loader_Run(argv[2], pipeFdCP[WRITE]);
+                continue;
+            }
+
+            close(pipeFdPC[WRITE]);
+
+            //Child Run
+            Child_Run(pipeFdCP[WRITE], pipeFdPC[READ]);
+
+            close(pipeFdPC[WRITE]);
+            close(pipeFdCP[READ]);
+
+            exit(EXIT_SUCCESS);
+        } else {
+            //Create buff
+            connectArr[i].capacity = Size_Buf(numChild - i);
+            connectArr[i].size = 0;
+            connectArr[i].buff = calloc(connectArr->size, sizeof(char));
+            connectArr[i].offsetBegin = connectArr[i].buff;
+            connectArr[i].offsetEnd = connectArr[i].buff;
+
+            close(pipeFdCP[WRITE]);
+            close(pipeFdPC[READ]);
         }
     }
 
-    for (long long int i = 0; i < numChild++; ++i) {
-        
+    while(1) {
+
+        //Poll write
+        int numW = poll(ufdsW, numChild, 0);
+        if (numW < 0) {
+            perror("pollW");
+            exit(EXIT_FAILURE);
+        }
+        if (numW != 0) {
+            for (size_t i = 0; i < numChild - 1; ++i) {
+                if (ufdsW[i].revents == POLLOUT) {
+                        Download_From_Buff(&connectArr[i]);
+                    }
+                }
+            }
+
+        //Poll read
+        int numR = poll(ufdsR, numChild, 0);
+        if (numR < 0) {
+            perror("pollR");
+            exit(EXIT_FAILURE);
+        }
+        if (numR != 0) {
+            for (size_t i = 0; i < numChild; ++i) {
+                if (ufdsR[i].revents == POLLIN)
+                    Load_To_Buff(&connectArr[i]);
+            }
+        }
     }
 
     return 0;

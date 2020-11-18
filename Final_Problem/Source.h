@@ -29,7 +29,7 @@ struct Connection_t {
     size_t size;
 
     char* offsetBegin;
-    char* offsetEnd
+    char* offsetEnd;
 };
 long long int Read_Number_from_Text(const char* text);
 void Child_Run(int sendFd, int rcvFd);
@@ -40,3 +40,6 @@ size_t Size_Buf(size_t degree);
 
 void Load_To_Buff(struct Connection_t* buff);
 void Download_From_Buff(struct Connection_t* buff);
+
+void Child_Dead_Handler(int signum);
+void Parent_Dead_Handler(int signum);

@@ -131,4 +131,14 @@ void Download_From_Buff(struct Connection_t* buff) {
                 break;
             }
         }
+    }
+}
+
+void Child_Dead_Handler(int signum) {
+    int status;
+    wait(&status);
+    if (WEXITSTATUS(status) != EXIT_SUCCESS) {
+        fprintf(stderr, "Child died unexpectedly\n");
+        exit(EXIT_FAILURE);
+    }
 }

@@ -42,4 +42,5 @@ void Load_To_Buff(struct Connection_t* buff);
 void Download_From_Buff(struct Connection_t* buff);
 
 void Child_Dead_Handler(int signum);
-void Parent_Dead_Handler(int signum);
+
+void Print_All_Buffers(struct Connection_t* buffs, size_t num);

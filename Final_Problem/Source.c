@@ -40,7 +40,9 @@ void Child_Run(int sendFd, int rcvFd) {
             fprintf(stderr, "Exit Success\n");
 #endif
             fflush(stdout);
-            break;
+            close(rcvFd);
+            close(sendFd);
+            exit(EXIT_SUCCESS);
         }
     }
 }
@@ -64,8 +66,12 @@ void Loader_Run(char* path, int sendFd) {
             fprintf(stderr, "ERROR in fd - fileFD - %d, %d", fileFd, sendFd);
             exit(EXIT_FAILURE);
         }
-        if (numSymbols == 0)
-            break;
+        if (numSymbols == 0) {
+            fflush(stdout);
+            close(sendFd);
+            //fprintf(stderr, "Loader exit\n");
+            exit(EXIT_SUCCESS);
+        }
     }
     close(fileFd);
 }
@@ -75,7 +81,7 @@ size_t Size_Buf(size_t degree) {
     for (size_t i = 0; i < degree; ++i) {
         size *= 3;
     }
-    return size * 1024;
+    return size * 100;
 }
 
 void Load_To_Buff(struct Connection_t* buff) {
@@ -112,9 +118,8 @@ void Load_To_Buff(struct Connection_t* buff) {
             buff->size += numSym;
             buff->offsetEnd += numSym;
             if (numSym < lenToEnd) {
-                break;
+                return;
             }
-            continue;
         } else {
             size_t freeData = buff->offsetBegin - buff->offsetEnd;
             assert(freeData == buff->capacity - buff->size);
@@ -126,9 +131,8 @@ void Load_To_Buff(struct Connection_t* buff) {
             buff->size += numSym;
             buff->offsetEnd += numSym;
             if (numSym < freeData) {
-                break;
+                return;
             }
-            continue;
         }
         assert(1 && "ooooops");
     }
@@ -154,13 +158,17 @@ void Download_From_Buff(struct Connection_t* buff) {
             fprintf(stderr, "%d send %d bytes\n", buff->rcvFd, numSym);
 #endif
             if (numSym < 0) {
-                perror("write ERROR");
+                if (errno == EAGAIN) {
+                    return;
+                }
+                perror("write1 ERROR");
+                fprintf(stderr, "%d/%d ", buff->size, buff->capacity);
                 exit(EXIT_FAILURE);
             }
             buff->offsetBegin += numSym;
             buff->size -= numSym;
             if (numSym < lenData) {
-                break;
+                return;
             }
         } else {
             int lenToEnd = buff->buff + buff->capacity - buff->offsetBegin;
@@ -169,13 +177,16 @@ void Download_From_Buff(struct Connection_t* buff) {
             fprintf(stderr, "%d send %d bytes\n", buff->rcvFd, numSym);
 #endif
             if (numSym < 0) {
-                perror("write ERROR");
+                if (errno == EAGAIN) {
+                    return;
+                }
+                perror("write2 ERROR");
                 exit(EXIT_FAILURE);
             }
             buff->offsetBegin += numSym;
             buff->size -= numSym;
             if (numSym < lenToEnd) {
-                break;
+                return;
             }
         }
     }

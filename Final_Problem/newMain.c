@@ -78,11 +78,9 @@ int main(int argc, char** argv) {
 
             if (i == 0) {
                 Loader_Run(argv[2], pipeCP[WRITE]);
-                //fprintf(stderr, "Loader exit\n");
-                exit(EXIT_SUCCESS);
+
             } else {
                 Child_Run(pipeCP[WRITE], pipePC[READ]);
-                exit(EXIT_SUCCESS);
             }
         } else {
             if (i == 0) {
@@ -107,6 +105,8 @@ int main(int argc, char** argv) {
         }
         connectArr[i].offsetBegin = connectArr[i].buff;
         connectArr[i].offsetEnd = connectArr[i].buff;
+        $(fcntl(connectArr[i].rcvFd, F_SETFL, O_NONBLOCK))
+        $(fcntl(connectArr[i].sendFd, F_SETFL, O_NONBLOCK))
     }
 
 #ifdef DEBUG
@@ -207,12 +207,13 @@ int main(int argc, char** argv) {
             }
         }
 
-        if (numCorpses == numChild && numCloseR == numR) {
+        if (numCorpses == numChild && numCloseR == numR && connectArr[numChild - 1].size == 0) {
             Download_From_Buff(&connectArr[numChild - 1]);
             //fprintf(stderr, "END - %d == %d", numCorpses, numChild);
             fflush(stdout);
             return 1;
         }
+        fflush(stdout);
 
 
     }

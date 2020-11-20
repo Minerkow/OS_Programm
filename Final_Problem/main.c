@@ -192,10 +192,6 @@ int main(int argc, char** argv) {
         }
         Print_All_Buffers(connectArr, numChild);
         j++;
-//        if (numR == 0) {
-//            Download_From_Buff(&connectArr[numChild - 1]);
-//            return 1;
-//        }
         if (j == 20) {
             break;
         }

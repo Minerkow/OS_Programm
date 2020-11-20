@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/Final_Problem/Header.h
+fcntl.h
+-
+stdio.h
+-
+stdlib.h
+-
+limits.h
+-
+sys/types.h
+-
+unistd.h
+-
+sys/types.h
+-
+sys/ipc.h
+-
+sys/msg.h
+-
+sys/types.h
+-
+sys/wait.h
+-
+sys/prctl.h
+-
+errno.h
+-
+assert.h
+-
+poll.h
+-
+
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/Final_Problem/Source.c
+Header.h
+/home/bibi/Desktop/Programm/Operation_System/OS_Programm/Final_Problem/Header.h
+

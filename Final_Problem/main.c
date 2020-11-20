@@ -1,4 +1,4 @@
-#include "Source.h"
+#include "Header.h"
 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -11,7 +11,6 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    Child_Dead_Handler(-numChild);
 
     struct sigaction childDead;
     childDead.sa_handler = Child_Dead_Handler;
@@ -36,13 +35,11 @@ int main(int argc, char** argv) {
         //Pipe Open  C -> P
         int pipeFdCP[2] = {-1, -1};
         pipe(pipeFdCP);
-        fprintf(stderr, "P#%d:C -> P, %d -> %d\n", i, pipeFdCP[WRITE], pipeFdCP[READ]);
 
         //Pipe Open P -> C
         int pipeFdPC[2] = {-1, -1};
-        if (i != 0) {
+        if (i > 0) {
             pipe(pipeFdPC);
-            fprintf(stderr, "P#%d:P -> C, %d -> %d\n", i, pipeFdPC[WRITE], pipeFdPC[READ]);
             connectArr[i - 1].sendFd = pipeFdPC[WRITE];
 
             //Add fdWrite to WPoll
@@ -59,6 +56,7 @@ int main(int argc, char** argv) {
             ufdsW[i].events = POLLOUT;
         }
         pid_t ppid = getpid();
+
         //Create children
         pid_t pid = fork();
         if (pid == 0) {
@@ -66,33 +64,36 @@ int main(int argc, char** argv) {
                 perror("prctl()");
                 exit(EXIT_FAILURE);
             }
-            fprintf(stderr, "C#%d:C -> P, %d -> %d\n", i, pipeFdCP[WRITE], pipeFdCP[READ]);
-
-            fprintf(stderr, "C#%d:P -> C, %d -> %d\n", i, pipeFdPC[WRITE], pipeFdPC[READ]);
 
             if (ppid != getppid()) {
                 fprintf(stderr, "Daddy DEAD!\n");
                 exit(EXIT_FAILURE);
             }
 
-            //close(pipeFdCP[READ]);
-
             //Loader Run
             if (i == 0) {
+                close(pipeFdCP[READ]);
+
                 Loader_Run(argv[2], pipeFdCP[WRITE]);
+                close(pipeFdCP[WRITE]);
+
                 fprintf(stderr, "Loader exit\n");
                 exit(EXIT_SUCCESS);
             } else {
-                //Child Run
+                //Close signals and free heap
+                close(connectArr[0].rcvFd);
+                for (int j = 1; j < i + 1; ++j) {
+                    close(connectArr[j].rcvFd);
+                    close(connectArr[j].sendFd);
+                }
+                free(ufdsR);
+                free(ufdsW);
+                free(connectArr);
 
                 Child_Run(pipeFdCP[WRITE], pipeFdPC[READ]);
 
-                //fprintf(stderr, "I am child, #%d\n", i);
-
-                //close(pipeFdPC[WRITE]);
-                //fprintf(stderr, "Close %d pid - %d \n", pipeFdPC[WRITE], getpid());
-                //close(pipeFdCP[READ]);
-                //fprintf(stderr, "Close %d pid - %d \n", pipeFdPC[WRITE], getpid());
+                close(pipeFdCP[WRITE]);
+                close(pipeFdPC[READ]);
 
                 exit(EXIT_SUCCESS);
             }
@@ -100,12 +101,16 @@ int main(int argc, char** argv) {
         } else {
             //Calloc
             if (i == 0) {
-
                 fprintf(stderr, "Memory alocated\n");
 
                 ufdsR = calloc(numChild, sizeof(struct pollfd));
                 ufdsW = calloc(numChild, sizeof(struct pollfd));
                 connectArr = calloc(numChild, sizeof(struct Connection_t));
+
+                close(pipeFdCP[WRITE]);
+            } else {
+                close(pipeFdCP[WRITE]);
+                close(pipeFdPC[READ]);
             }
 
             connectArr[i].rcvFd = pipeFdCP[READ];
@@ -114,19 +119,16 @@ int main(int argc, char** argv) {
             assert(ufdsR);
             ufdsR[i].fd = pipeFdCP[READ];
             ufdsR[i].events = POLLIN;
-
-            //Create buff
-            connectArr[i].capacity = Size_Buf(numChild - i);
-            connectArr[i].size = 0;
-            connectArr[i].buff = calloc(connectArr->capacity, sizeof(char));
-            connectArr[i].offsetBegin = connectArr[i].buff;
-            connectArr[i].offsetEnd = connectArr[i].buff;
-
-            fprintf(stderr, "Buff #%d create\n", i);
-
-            //close(pipeFdCP[WRITE]);
-            //close(pipeFdPC[READ]);
         }
+    }
+
+    for (int i = 0; i < numChild; ++i) {
+        //Create buff
+        connectArr[i].capacity = Size_Buf(numChild - i);
+        connectArr[i].size = 0;
+        connectArr[i].buff = calloc(connectArr->capacity, sizeof(char));
+        connectArr[i].offsetBegin = connectArr[i].buff;
+        connectArr[i].offsetEnd = connectArr[i].buff;
     }
 
     fprintf(stderr, "ufdsW:[");
@@ -152,12 +154,15 @@ int main(int argc, char** argv) {
             perror("pollW");
             exit(EXIT_FAILURE);
         }
+        int k = 0;
         if (numW != 0) {
             for (size_t i = 0; i < numChild; ++i) {
                 if (ufdsW[i].revents == POLLOUT) {
                     fprintf(stderr, ">>>>>>>>>>>Download to %d\n", ufdsW[i].fd);
                     Download_From_Buff(&connectArr[i]);
+                    k++;
                 }
+                ufdsW[i].revents = 0;
             }
         }
 
@@ -174,13 +179,28 @@ int main(int argc, char** argv) {
                     fprintf(stderr, ">>>>>>>>>>>Load from %d\n", ufdsR[i].fd);
                     Load_To_Buff(&connectArr[i]);
                 }
+                if ((ufdsR[i].revents == POLLHUP || ufdsR[i].revents == POLLNVAL ||
+                    ufdsR[i].revents == POLLERR) && connectArr[i].size == 0) {
+                    fprintf(stderr, "kek");
+                    if (i != numChild - 1) {
+                        close(connectArr[i].sendFd);
+                    }
+                    close(connectArr[i].rcvFd);
+                }
+                ufdsR[i].revents = 0;
             }
         }
         Print_All_Buffers(connectArr, numChild);
         j++;
-        if (j == 200) break;
+//        if (numR == 0) {
+//            Download_From_Buff(&connectArr[numChild - 1]);
+//            return 1;
+//        }
+        if (j == 20) {
+            break;
+        }
         //exit(2);
     }
 
-    return 0;
+    return 2;
 }

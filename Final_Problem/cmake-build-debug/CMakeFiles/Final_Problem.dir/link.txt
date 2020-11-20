@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/Final_Problem.dir/newMain.c.o CMakeFiles/Final_Problem.dir/Source.c.o  -o Final_Problem 

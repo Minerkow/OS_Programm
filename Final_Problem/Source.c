@@ -1,4 +1,4 @@
-#include "Source.h"
+#include "Header.h"
 
 extern size_t numChild;
 
@@ -21,38 +21,53 @@ long long int Read_Number_from_Text(const char* text) {
 }
 
 void Child_Run(int sendFd, int rcvFd) {
+#ifdef DEBUG
     fprintf(stderr, "I download from %d to %d\n", rcvFd, sendFd);
+#endif
     while (1) {
+        //fprintf(stderr, "Splice\n");
         int numSymbols = splice( rcvFd, NULL,
                                  sendFd, NULL,
                                  PIPE_BUF, SPLICE_F_MOVE);
+        //fprintf(stderr, "From Splice\n");
         if (numSymbols < 0) {
             perror("splice()");
             fprintf(stderr, "ERROR in fd - %d, %d", rcvFd, sendFd);
             exit(EXIT_FAILURE);
         }
-        if (numSymbols == 0)
+        if (numSymbols == 0) {
+#ifdef DEBUG
+            fprintf(stderr, "Exit Success\n");
+#endif
+            fflush(stdout);
             break;
+        }
     }
 }
 
 void Loader_Run(char* path, int sendFd) {
     int fileFd = open(path, O_RDONLY);
+    $(fileFd)
+#ifdef DEBUG
     fprintf(stderr, "I download from fileFd: %d to %d\n", fileFd, sendFd);
+#endif
     while (1) {
 
         int numSymbols = splice( fileFd, NULL,
                                  sendFd, NULL,
                                  PIPE_BUF, SPLICE_F_MOVE);
+#ifdef DEBUG
         fprintf(stderr, "Loader send %d bytes\n", numSymbols);
+#endif
         if (numSymbols < 0) {
-            perror("splice()");
+            perror("splice");
             fprintf(stderr, "ERROR in fd - fileFD - %d, %d", fileFd, sendFd);
             exit(EXIT_FAILURE);
         }
         if (numSymbols == 0)
             break;
     }
+    close(fileFd);
 }
 
 size_t Size_Buf(size_t degree) {
@@ -60,7 +75,7 @@ size_t Size_Buf(size_t degree) {
     for (size_t i = 0; i < degree; ++i) {
         size *= 3;
     }
-    return size * 2;
+    return size * 1024;
 }
 
 void Load_To_Buff(struct Connection_t* buff) {
@@ -72,7 +87,7 @@ void Load_To_Buff(struct Connection_t* buff) {
         buff->offsetEnd = buff->buff;
         int numSym = read(buff->rcvFd, buff->buff, buff->capacity);
         if (numSym < 0) {
-            perror("read");
+            perror("read ERROR");
             exit(EXIT_FAILURE);
         }
         buff->size += numSym;
@@ -91,7 +106,7 @@ void Load_To_Buff(struct Connection_t* buff) {
             size_t lenToEnd = buff->buff + buff->capacity - buff->offsetEnd;
             int numSym = read(buff->rcvFd, buff->offsetBegin, lenToEnd);
             if (numSym < 0) {
-                perror("read");
+                perror("read ERROR");
                 exit(EXIT_FAILURE);
             }
             buff->size += numSym;
@@ -105,7 +120,7 @@ void Load_To_Buff(struct Connection_t* buff) {
             assert(freeData == buff->capacity - buff->size);
             int numSym = read(buff->rcvFd, buff->offsetEnd, freeData);
             if (numSym < 0) {
-                perror("read");
+                perror("read ERROR");
                 exit(EXIT_FAILURE);
             }
             buff->size += numSym;
@@ -135,9 +150,11 @@ void Download_From_Buff(struct Connection_t* buff) {
         if (buff->offsetEnd - buff->offsetBegin > 0) {
             int lenData = buff->offsetEnd - buff->offsetBegin;
             int numSym = write(buff->sendFd, buff->offsetBegin, lenData);
+#ifdef DEBUG
             fprintf(stderr, "%d send %d bytes\n", buff->rcvFd, numSym);
+#endif
             if (numSym < 0) {
-                perror("write");
+                perror("write ERROR");
                 exit(EXIT_FAILURE);
             }
             buff->offsetBegin += numSym;
@@ -148,9 +165,11 @@ void Download_From_Buff(struct Connection_t* buff) {
         } else {
             int lenToEnd = buff->buff + buff->capacity - buff->offsetBegin;
             int numSym = write(buff->sendFd, buff->offsetBegin, lenToEnd);
+#ifdef DEBUG
             fprintf(stderr, "%d send %d bytes\n", buff->rcvFd, numSym);
+#endif
             if (numSym < 0) {
-                perror("write");
+                perror("write ERROR");
                 exit(EXIT_FAILURE);
             }
             buff->offsetBegin += numSym;
@@ -163,24 +182,6 @@ void Download_From_Buff(struct Connection_t* buff) {
 }
 
 void Child_Dead_Handler(int signum) {
-    static size_t numChildrenDied = 0;
-    static size_t numChild = 0;
-    if (signum < 0) {
-        numChild = abs(signum);
-        fprintf(stdout, "NumChild = %d\n", numChild);
-        return;
-    }
-    int status;
-    wait(&status);
-    if (WEXITSTATUS(status) != EXIT_SUCCESS) {
-        fprintf(stderr, "Child died unexpectedly\n");
-        exit(EXIT_FAILURE);
-    }
-    numChildrenDied++;
-    fprintf(stdout, "Numchildre++ = %d\n", numChildrenDied);
-    if (numChildrenDied == numChild) {
-        exit(EXIT_SUCCESS);
-    }
 }
 
 void Print_All_Buffers(struct Connection_t* buffs, size_t num) {

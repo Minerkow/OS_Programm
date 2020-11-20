@@ -2,6 +2,13 @@
 
 #define _GNU_SOURCE
 
+#define $(ret)                    \
+    if (ret < 0) {                \
+        perror (#ret);            \
+        fprintf(stderr, "ERROR"); \
+        exit(EXIT_FAILURE);       \
+    }
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>

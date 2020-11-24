@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 2.8)
 project(Final_Problem C)
 
 set(CMAKE_C_STANDARD 11)
 
 add_executable(Final_Problem newMain.c Source.c Header.h)
+add_executable(Test test.c Source.c)

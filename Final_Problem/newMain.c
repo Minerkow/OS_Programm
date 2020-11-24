@@ -146,9 +146,8 @@ int main(int argc, char** argv) {
                     fprintf(stderr, ">>>>>>>>>>>Download to %d\n", ufdsW[i].fd);
 #endif
                     Download_From_Buff(&connectArr[i]);
-
-                   // Print_All_Buffers(connectArr, numChild);
                 }
+
                 ufdsW[i].revents = 0;
             }
         }
@@ -175,11 +174,10 @@ int main(int argc, char** argv) {
 #endif
                 } else {
                     if (ufdsR[i].revents & POLLHUP || ufdsR[i].revents & POLLNVAL) {
-                        //fprintf(stderr, "Close");
-                        if (i != numChild - 1) {
+                        close(connectArr[i].rcvFd);
+                        if (connectArr[i].size == 0) {
                             close(connectArr[i].sendFd);
                         }
-                        close(connectArr[i].rcvFd);
 #ifdef DEBUG
                         Print_All_Buffers(connectArr, numChild);
 #endif
@@ -206,17 +204,14 @@ int main(int argc, char** argv) {
                 numCorpses++;
             }
         }
-
-        if (numCorpses == numChild && numCloseR == numR && connectArr[numChild - 1].size == 0) {
+        //fprintf(stderr, "corpses = %d, numCloser = %d, numR = %d\n", numCorpses, numCloseR, numR);
+        if (numCorpses == numChild && numCloseR == numR) {
             Download_From_Buff(&connectArr[numChild - 1]);
             //fprintf(stderr, "END - %d == %d", numCorpses, numChild);
             fflush(stdout);
             return 1;
         }
         fflush(stdout);
-
-
     }
-
 }
 

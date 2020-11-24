@@ -38,6 +38,14 @@ struct Connection_t {
     char* offsetBegin;
     char* offsetEnd;
 };
+
+struct Ufds_t {
+    struct pollfd *data;
+    size_t* buffsInd;
+    size_t size;
+    size_t notCloseIndex;
+};
+
 long long int Read_Number_from_Text(const char* text);
 void Child_Run(int sendFd, int rcvFd);
 void Parent_Run();

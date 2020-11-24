@@ -25,9 +25,11 @@ void Child_Run(int sendFd, int rcvFd) {
     fprintf(stderr, "I download from %d to %d\n", rcvFd, sendFd);
 #endif
     while (1) {
+        //fprintf(stderr, "Splice\n");
         int numSymbols = splice( rcvFd, NULL,
                                  sendFd, NULL,
                                  PIPE_BUF, SPLICE_F_MOVE);
+        //fprintf(stderr, "From splice\n");
         if (numSymbols < 0) {
             perror("splice()");
             fprintf(stderr, "ERROR in fd - %d, %d", rcvFd, sendFd);
@@ -67,10 +69,13 @@ void Loader_Run(char* path, int sendFd) {
         if (numSymbols == 0) {
             fflush(stdout);
             close(sendFd);
+            close(fileFd);
+#ifdef DEBUG
+            fprintf(stderr, "Loader exit\n");
+#endif
             exit(EXIT_SUCCESS);
         }
     }
-    close(fileFd);
 }
 
 size_t Size_Buf(size_t degree) {
@@ -162,7 +167,7 @@ void Download_From_Buff(struct Connection_t* buff) {
                     return;
                 }
                 perror("write1 ERROR");
-                fprintf(stderr, "%zu/%zu ", buff->size, buff->capacity);
+                fprintf(stderr, "%zu/%zu fd - %d", buff->size, buff->capacity, buff->sendFd);
                 exit(EXIT_FAILURE);
             }
             buff->offsetBegin += numSym;

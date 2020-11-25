@@ -54,25 +54,31 @@ void Reader() {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
-    semInstructions[2].sem_num = CONNECT;
-    semInstructions[2].sem_op = V;
-    semInstructions[2].sem_flg = SEM_UNDO;
-
     if (semop(semId, semInstructions, 2) < 0) {
         perror("semop1");
         exit(EXIT_FAILURE);
     }
 
     //Init FULL
-    struct sembuf checkF = {FULL, W, IPC_NOWAIT};
-    if (semop(semId, &checkF, 1) < 0) {
-        struct sembuf initF = {FULL, P, 0};
-        semop(semId, &initF, 1);
+    if (semctl(semId, FULL, SETVAL, 0) < 0) {
+        perror("semctl()");
+        exit(EXIT_FAILURE);
     }
 
     //Init CONNECT
+    semInstructions[2].sem_num = CONNECT;
+    semInstructions[2].sem_op = V;
+    semInstructions[2].sem_flg = SEM_UNDO;
+
     if (semop(semId, &semInstructions[2], 1) < 0) {
         perror("semop1");
+        exit(EXIT_FAILURE);
+    }
+
+    //Reader ready
+    struct sembuf readerReady = {READER, V, SEM_UNDO};
+    if (semop(semId, &readerReady, 1) < 0) {
+        perror("semop()");
         exit(EXIT_FAILURE);
     }
 
@@ -80,11 +86,11 @@ void Reader() {
     struct sembuf checkC[2];
 
     checkC[0].sem_num = WRITER;
-    checkC[0].sem_op = P;
+    checkC[0].sem_op = P2;
     checkC[0].sem_flg = 0;
 
     checkC[1].sem_num = WRITER;
-    checkC[1].sem_op = V;
+    checkC[1].sem_op = V2;
     checkC[1].sem_flg = 0;
 
     semop(semId, checkC, 2);

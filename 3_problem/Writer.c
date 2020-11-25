@@ -68,6 +68,18 @@ void Writer(char* path) {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
+    //Init MUTEX
+    if (semctl(semId, MUTEX, SETVAL, 1) < 0) {
+        perror("semctl");
+        exit(EXIT_FAILURE);
+    }
+
+
+    //Init EMPTY
+    if (semctl(semId, EMPTY, SETVAL, 1) < 0) {
+        perror("semctl()");
+        exit(EXIT_FAILURE);
+    }
 
     //Init CONNECT
     semInstructions[2].sem_num = CONNECT;
@@ -79,30 +91,22 @@ void Writer(char* path) {
         exit(EXIT_FAILURE);
     }
 
-    //Init MUTEX
-    if (semctl(semId, MUTEX, SETVAL, 1) < 0) {
-        perror("semctl");
+    //Writer ready
+    struct sembuf writerReady = {WRITER, V, SEM_UNDO};
+    if (semop(semId, &writerReady, 1) < 0) {
+        perror("semop()");
         exit(EXIT_FAILURE);
-    }
-
-
-    //Init EMPTY
-
-    struct sembuf checkE = {EMPTY, W, IPC_NOWAIT};
-    if (semop(semId, &checkE, 1) >= 0) {
-        struct sembuf initE = {EMPTY, V, 0};
-        semop(semId, &initE, 1);
     }
 
     //Wait Connect
     struct sembuf checkC[2];
 
     checkC[0].sem_num = READER;
-    checkC[0].sem_op = P;
+    checkC[0].sem_op = P2;
     checkC[0].sem_flg = 0;
 
     checkC[1].sem_num = READER;
-    checkC[1].sem_op = V;
+    checkC[1].sem_op = V2;
     checkC[1].sem_flg = 0;
 
     semop(semId, checkC, 2);

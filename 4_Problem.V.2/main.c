@@ -85,6 +85,7 @@ int main(int argc, char ** argv){
 
         struct sigaction confirm;
         confirm.sa_handler = Confirm_Handler;
+        confirm.sa_flags = ~SA_RESETHAND;
         if (sigfillset(&confirm.sa_mask) < 0) {
             perror("sigfillset");
             exit(EXIT_FAILURE);
@@ -93,7 +94,7 @@ int main(int argc, char ** argv){
             perror("sigaction");
             exit(EXIT_FAILURE);
         }
-        
+
         int fdFile = open(argv[1], O_RDONLY);
         if (fdFile < 0 ){
             perror("open()");
@@ -122,7 +123,7 @@ int main(int argc, char ** argv){
                         exit(EXIT_FAILURE);
                     }
                 }
-                
+
                 sigsuspend(&set);
             }
         }
@@ -132,7 +133,7 @@ int main(int argc, char ** argv){
 
     struct sigaction childDead;
     childDead.sa_handler = Child_Dead_Handler;
-    childDead.sa_flags = SA_NOCLDWAIT;
+    childDead.sa_flags = SA_NOCLDWAIT | ~SA_RESETHAND;
 
     if (sigfillset(&childDead.sa_mask) < 0) {
         perror("sigfillset");
@@ -145,6 +146,7 @@ int main(int argc, char ** argv){
 
     struct sigaction rcvOne;
     rcvOne.sa_handler = One_Handler;
+    rcvOne.sa_flags = ~SA_RESETHAND;
     if (sigfillset(&rcvOne.sa_mask) < 0) {
         perror("sigfillset");
         exit(EXIT_FAILURE);
@@ -156,6 +158,7 @@ int main(int argc, char ** argv){
 
     struct sigaction rcvZero;
     rcvZero.sa_handler = Zero_Handler;
+    rcvZero.sa_flags = ~SA_RESETHAND;
     if (sigfillset(&rcvZero.sa_mask) < 0) {
         perror("sigfillset");
         exit(EXIT_FAILURE);
@@ -177,7 +180,7 @@ int main(int argc, char ** argv){
             numBit=128;
             rcvSym = 0;
         }
-        
+
         sigsuspend(&set);
         if (kill(pid, SIGUSR1) < 0) {
             perror("kill");
@@ -195,18 +198,18 @@ void Child_Dead_Handler(int signo) {
 }
 
 void Confirm_Handler(int signo) {
-    fprintf(stderr, "Confirm\n");
+    //fprintf(stderr, "Confirm\n");
 }
 
 void One_Handler(int signo) {
     rcvSym += numBit;
     numBit /= 2;
-    fprintf(stderr, "rcv1\n");
+    //fprintf(stderr, "rcv1\n");
 }
 
 void Zero_Handler(int signo) {
     numBit/=2;
-    fprintf(stderr, "rcv0\n");
+    //fprintf(stderr, "rcv0\n");
 }
 
 //void Daddy_Dead_Handler(int signo) {

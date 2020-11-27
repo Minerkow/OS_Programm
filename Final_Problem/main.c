@@ -22,8 +22,6 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-   /* struct pollfd *ufdsR = calloc(numChild, sizeof(struct pollfd));
-    struct pollfd *ufdsW = calloc(numChild, sizeof(struct pollfd)); */
     struct Connection_t *connectArr = calloc(numChild, sizeof(struct Connection_t));
 
 #ifdef DEBUG
@@ -37,8 +35,6 @@ int main(int argc, char** argv) {
 
         connectArr[i].rcvFd = pipeCP[READ];
         connectArr[i].size = 0;
-        /*ufds.data[i].fd = pipeCP[READ];
-        ufds.data[i].events = POLLIN;*/
 
         //Pipe Open P -> C
         int pipePC[2] = {-1, -1};
@@ -75,7 +71,6 @@ int main(int argc, char** argv) {
 
             if (i == 0) {
                 Loader_Run(argv[2], pipeCP[WRITE]);
-
             } else {
                 Child_Run(pipeCP[WRITE], pipePC[READ]);
             }
@@ -163,7 +158,7 @@ int main(int argc, char** argv) {
 
         if (ufds.size == 0) {
             assert(numCorpses == numChild);
-            return 3;
+            break;
         }
         //Poll
         int numReadyFd = poll(ufds.data, ufds.size, 0);
@@ -211,5 +206,11 @@ int main(int argc, char** argv) {
         }
         fflush(stdout);
     }
+    for (size_t i = 0; i < numChild; ++i) {
+        free(connectArr[i].buff);
+    }
+    free (connectArr);
+    free(ufds.buffsInd);
+    free(ufds.data);
 }
 

@@ -11,16 +11,16 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction childDead;
-    childDead.sa_handler = Child_Dead_Handler;
-    if (sigfillset(&childDead.sa_mask) < 0) {
-        perror("sigfillset");
-        exit(EXIT_FAILURE);
-    }
-    if (sigaction(SIGCHLD, &childDead, NULL) < 0) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
+    // struct sigaction childDead;
+    // childDead.sa_handler = Child_Dead_Handler;
+    // if (sigfillset(&childDead.sa_mask) < 0) {
+    //     perror("sigfillset");
+    //     exit(EXIT_FAILURE);
+    // }
+    // if (sigaction(SIGCHLD, &childDead, NULL) < 0) {
+    //     perror("sigaction");
+    //     exit(EXIT_FAILURE);
+    // }
 
     struct Connection_t *connectArr = calloc(numChild, sizeof(struct Connection_t));
 

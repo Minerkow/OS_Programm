@@ -25,8 +25,6 @@ struct Data_t {
 };
 
 void Writer(char* path);
-void SemOp(int sem, short sem_op, int sem_num, short flag);
-int InitSem(key_t key, unsigned short* value, int numSem);
 void DeleteSem(int semId);
 
 //void ReadySemOp(int readySem, int sem_num, short sem_op);

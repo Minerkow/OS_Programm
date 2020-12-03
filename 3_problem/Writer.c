@@ -68,28 +68,35 @@ void Writer(char* path) {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
-    //Init MUTEX
-    if (semctl(semId, MUTEX, SETVAL, 1) < 0) {
-        perror("semctl");
-        exit(EXIT_FAILURE);
-    }
-
-
-    //Init EMPTY
-    if (semctl(semId, EMPTY, SETVAL, 1) < 0) {
-        perror("semctl()");
-        exit(EXIT_FAILURE);
-    }
-
     //Init CONNECT
     semInstructions[2].sem_num = CONNECT;
     semInstructions[2].sem_op = V;
     semInstructions[2].sem_flg = SEM_UNDO;
 
+/*(1)Begin writer-writer for ShaMemory  [76 - 237]*/
+
     if (semop(semId, semInstructions, 3) < 0) {
         perror("semop");
         exit(EXIT_FAILURE);
     }
+
+
+/*(3)Begin Reader-Writer for MUTEX [84 - 90]*/
+    //Init MUTEX
+    if (semctl(semId, MUTEX, SETVAL, 1) < 0) {
+        perror("semctl");
+        exit(EXIT_FAILURE);
+    }
+/*(3)End Reader-Writer for MUTEX*/
+
+
+/*(4)Begin Reader-Writer for EMPTY [93-99]*/
+    //Init EMPTY
+    if (semctl(semId, EMPTY, SETVAL, 1) < 0) {
+        perror("semctl()");
+        exit(EXIT_FAILURE);
+    }
+/*(4)End Reader-Writer for EMPTY*/
 
     //Writer ready
     struct sembuf writerReady = {WRITER, V, SEM_UNDO};
@@ -148,6 +155,7 @@ void Writer(char* path) {
         sopEP[2].sem_num = EMPTY;
         sopEP[2].sem_op = P;
         sopEP[2].sem_flg = 0;
+/*(5)Begin Reader-Writer for ShaMemory [158-186]*/
 
         if (semop(semId, sopEP, 3) < 0) {
             perror ("semop writer in while");
@@ -167,12 +175,15 @@ void Writer(char* path) {
             exit(EXIT_FAILURE);
         }
 
+/*(6)Begin Reader-Writer for FULL [177-181]*/
         //FULL - V && MUTEX - V
         struct sembuf sopFV = {FULL, V, 0};
         semop(semId, &sopFV, 1);
+/*(6)End Reader-Writer for FULL*/
+
         struct sembuf sopMV = {MUTEX, V, SEM_UNDO};
         semop(semId, &sopMV, 1);
-
+/*(5)End Reader-Writer for ShaMemory  */
 #ifdef DEBUG
         fprintf(stderr, "MUTEX and FULL - V\n");
 #endif
@@ -224,11 +235,8 @@ void Writer(char* path) {
         perror("close()");
         exit(EXIT_FAILURE);
     }
-
+/*(1)End writer-writer for ShMemory*/
 }
-
-
-//----------------------------------------------------------------------------------------
 
 void DeleteSem(int semId) {
     if (semctl(semId, 0, IPC_RMID) < 0) {

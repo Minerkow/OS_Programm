@@ -15,6 +15,7 @@ void Reader() {
         exit(EXIT_FAILURE);
     }
 
+
 #ifdef DEBUG
     fprintf(stderr, "id ShMemory - %d\n", idShm);
 #endif
@@ -54,16 +55,21 @@ void Reader() {
     semInstructions[1].sem_op = V;
     semInstructions[1].sem_flg = SEM_UNDO;
 
+/*(2)Begin Reader-Reader ShMemory [58-215]*/
+
     if (semop(semId, semInstructions, 2) < 0) {
         perror("semop1");
         exit(EXIT_FAILURE);
     }
 
+/*(6*)Begin Reader-Writer for FULL [65-71]*/
     //Init FULL
     if (semctl(semId, FULL, SETVAL, 0) < 0) {
         perror("semctl()");
         exit(EXIT_FAILURE);
     }
+/*(6*)End Reader-Writer for FULL*/
+
 
     //Init CONNECT
     semInstructions[2].sem_num = CONNECT;
@@ -95,6 +101,7 @@ void Reader() {
 
     semop(semId, checkC, 2);
 
+/*(5*)Begin Writer-Reader ShMemory [104-187]*/
     struct Data_t buff;
     while(1) {
         //FULL - P && MUTEX - P
@@ -128,8 +135,11 @@ void Reader() {
             fprintf(stderr, "Writer DEAD\n");
             exit(EXIT_FAILURE);
         }
+/*(3*)Begin Reader-Writer for MUTEX [138-141]*/
         struct sembuf sopMP = {MUTEX, P, SEM_UNDO};
         semop(semId, &sopMP, 1);
+/*(3*)End Reader-Writer for MUTEX*/
+
 
 #ifdef DEBUG
         fprintf(stderr, "MUTEX and FULL - P\n");
@@ -140,9 +150,11 @@ void Reader() {
             exit(EXIT_FAILURE);
         }
 
+/*(4*)Begin Reader-Writer for EMPTY [153 - 157]*/
         //EMPTY - V && MUTEX - V
         struct sembuf sopEV = {EMPTY, V, 0};
         semop(semId, &sopEV, 1);
+/*(4*)End Reader-Writer for EMPTY*/
 
         struct sembuf sopMV = {MUTEX, V, SEM_UNDO};
         semop(semId, &sopMV, 1);
@@ -170,8 +182,10 @@ void Reader() {
             exit(EXIT_FAILURE);
         }
         //sleep(3);
-
     }
+
+/*(5*)End Writer-Reader ShMemory*/
+
 
     struct sembuf pairP = {CONNECT, P, SEM_UNDO};
     semop(semId, &pairP, 1);
@@ -197,4 +211,7 @@ void Reader() {
         }
         fprintf(stderr, "}\n");
 #endif
+
+/*(2)End Reader-Reader ShMemory*/
+
 }
